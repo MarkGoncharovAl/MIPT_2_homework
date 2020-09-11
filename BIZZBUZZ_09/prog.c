@@ -132,7 +132,7 @@ void write_bizz(BIZZ_BUZZ num, int output)
 }
 BIZZ_BUZZ read_num(char** str, int* remaining)
 {
-    while (**str == ' ') {
+    while (**str == ' ' || **str == '\n') {
         (*str)++;
         (*remaining)--;
     }
@@ -149,7 +149,12 @@ BIZZ_BUZZ read_num(char** str, int* remaining)
     }
 
     int del3 = 0, del5 = 0;
-    while(cur_symbol != ' ' && cur_symbol != '\0' && cur_symbol != EOF && *remaining > 0) {
+
+    while(cur_symbol != ' '
+       && cur_symbol != '\n' 
+       && cur_symbol != '\0' 
+       && cur_symbol != EOF 
+       && *remaining > 0) {
 
         //printf("%c", cur_symbol);
         if (cur_symbol < '0' || cur_symbol > '9') {
