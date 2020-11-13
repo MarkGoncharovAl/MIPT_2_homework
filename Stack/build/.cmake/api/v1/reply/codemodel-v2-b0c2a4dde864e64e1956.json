@@ -1,0 +1,118 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.13.4"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						2
+					]
+				},
+				{
+					"build" : "Common_libs",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.13.4"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 1,
+					"source" : "Common_libs",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						3
+					]
+				}
+			],
+			"name" : "",
+			"projects" : 
+			[
+				{
+					"childIndexes" : 
+					[
+						1
+					],
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "Main",
+					"targetIndexes" : 
+					[
+						2
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						1
+					],
+					"name" : "Lib",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						3
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 1,
+					"id" : "errors::@efadfef4eed54998c619",
+					"jsonFile" : "target-errors-8b5798a4522acd135760.json",
+					"name" : "errors",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "random::@efadfef4eed54998c619",
+					"jsonFile" : "target-random-9014dd46203894a171af.json",
+					"name" : "random",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "run::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-run-48d17c2e64a0d4581848.json",
+					"name" : "run",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "safe_ops::@efadfef4eed54998c619",
+					"jsonFile" : "target-safe_ops-b3aa753d584e8a2257ab.json",
+					"name" : "safe_ops",
+					"projectIndex" : 1
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/alexandr/VS_prog/temp/build",
+		"source" : "/home/alexandr/VS_prog/temp"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 0
+	}
+}
