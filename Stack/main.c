@@ -1,23 +1,23 @@
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/sem.h>
-#include <sys/shm.h>
-#include <sys/wait.h>
-#include <time.h>
-#include <signal.h>
-#include "stack.h"
+#include "Stack/stack.h"
+
+void DO_TESTS();
+void test1();
+void test2();
+void test3();
+
+//const int MY_IPC_ERROR = -1;
+
+int main()
+{
+    DO_TESTS();
+}
 
 #define GET_KEY(var)                 \
     key_t var = ftok("Hah", rand()); \
     if (var == MY_IPC_ERROR)         \
     ERROR("ftok wasn't done properly!")
 
-void test1();
-void test2();
-void test3();
-
-int main(int argc, char *argv[])
+void DO_TESTS()
 {
     srand(time(0));
 
@@ -31,7 +31,6 @@ int main(int argc, char *argv[])
 
 void test1()
 {
-
     GET_KEY(key);
     GET_KEY(extra_key1);
     GET_KEY(extra_key);
@@ -164,8 +163,8 @@ void test3()
     {
         int out = push(my_st, data + i);
         dump(my_st);
-        if (i < 2 && out == -1 ||
-            i >= 2 && out != -1)
+        if ((i < 2 && out == -1) ||
+            (i >= 2 && out != -1))
         {
             ERROR("Push out of range is dead!");
         }
@@ -176,8 +175,8 @@ void test3()
         void *val = NULL;
         int out = pop(my_st, &val);
         dump(my_st);
-        if (i < 2 && out == -1 ||
-            i >= 2 && out != -1)
+        if ((i < 2 && out == -1) ||
+            (i >= 2 && out != -1))
         {
             ERROR("Pop out of range is dead!");
         }
