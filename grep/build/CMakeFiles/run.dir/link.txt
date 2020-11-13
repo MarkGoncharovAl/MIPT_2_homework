@@ -1,1 +1,0 @@
-/usr/bin/cc    CMakeFiles/run.dir/first.c.o  -o run  Common_libs/libsafe_ops.a 

@@ -1,6 +1,0 @@
-/home/alexandr/VS_prog/grep/build/CMakeFiles/rebuild_cache.dir
-/home/alexandr/VS_prog/grep/build/CMakeFiles/edit_cache.dir
-/home/alexandr/VS_prog/grep/build/CMakeFiles/run.dir
-/home/alexandr/VS_prog/grep/build/Common_libs/CMakeFiles/rebuild_cache.dir
-/home/alexandr/VS_prog/grep/build/Common_libs/CMakeFiles/edit_cache.dir
-/home/alexandr/VS_prog/grep/build/Common_libs/CMakeFiles/safe_ops.dir
