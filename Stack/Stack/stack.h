@@ -9,6 +9,7 @@
 #include <time.h>
 #include <signal.h>
 #include <unistd.h>
+#include "errno.h"
 
 typedef int sem_t;
 typedef char bool_t;
@@ -59,7 +60,7 @@ int pop(mystack_t *stack, void **val);
 //MY_FUNCTIONS
 /////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////
-void dump(const mystack_t *stack);
+void dump(const mystack_t *stack, const char extra_info[]);
 void errror(const char info[], size_t LINE, char *FILE);
 void warrning(const char info[], size_t LINE, char *FILE);
 #define ERROR(a) errror(a, __LINE__, __FILE__)

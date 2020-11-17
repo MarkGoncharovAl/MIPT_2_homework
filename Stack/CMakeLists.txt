@@ -12,5 +12,5 @@ set(CMAKE_C_FLAGS_RELEASE "-O3")
 add_subdirectory(Stack)
 
 message("Building main!")
-add_executable(a.out main.c)
-target_link_libraries(a.out stack)
+add_executable(main main.c)
+target_link_libraries(main stack)

@@ -1,29 +1,12 @@
 #include "stack.h"
 
-void stack_first_init(key_t key, int size)
-{
-    sem_t sem = semget(key, 1, IPC_CREAT | 0777);
-    if (sem == MY_IPC_ERROR)
-        ERROR("semget wasn't done properly!");
-
-    int shared_id = shmget(key, size * sizeof(void *) + 3 * sizeof(int), IPC_CREAT | 0777 | IPC_EXCL);
-    if (shared_id == MY_IPC_ERROR)
-        ERROR("shmget wasn't done properly!");
-
-    int *mem = (int *)shmat(shared_id, NULL, 0);
-    if (mem == (int *)MY_IPC_ERROR)
-        ERROR("Shmat wasn't done properly!");
-
-    mem[0] = 0;
-    mem[1] = size;
-    mem[2] = sem;
-
-    sem_increase(sem);
-
-    int out = shmdt((void *)mem);
-    if (out == MY_IPC_ERROR)
-        ERROR("Shmdt wasn't done properly!");
-}
+///
+// например есть память
+// 56347548574435784598343
+// IPC_EXCLUSIVE
+// (size_off = 65) 5 6 3 5
+//
+///
 
 mystack_t *attach_stack(key_t key, int size)
 {
@@ -34,13 +17,42 @@ mystack_t *attach_stack(key_t key, int size)
         return new_stack;
     }
 
-    int shared_id = shmget(key, size * sizeof(void *) + 3 * sizeof(int), 0);
-    if (shared_id == MY_IPC_ERROR)
-        ERROR("shmget wasn't done properly!");
+    int shared_id = shmget(key, size * sizeof(void *) + 3 * sizeof(int), IPC_CREAT | IPC_EXCL | 0666);
+    //! Типо создаём новую память. IPC_CREAT|IPC_EXCL возращают ошибку, если память уже создана
+    //! Ниже проверяем на ошибку
 
-    new_stack->owner_ = (int *)shmat(shared_id, NULL, 0);
-    if (new_stack->owner_ == (void *)MY_IPC_ERROR)
-        ERROR("Shmat wasn't done properly!");
+    if (shared_id != MY_IPC_ERROR)
+    {
+        //! Это старая функция первой инициализации
+        sem_t sem = semget(key, 1, IPC_CREAT | 0777);
+        if (sem == MY_IPC_ERROR)
+            ERROR("semget wasn't done properly!");
+
+        new_stack->owner_ = (int *)shmat(shared_id, NULL, 0);
+        if (new_stack->owner_ == (int *)MY_IPC_ERROR)
+            ERROR("Shmat wasn't done properly!");
+
+        new_stack->owner_[0] = 0;
+        new_stack->owner_[1] = size;
+        new_stack->owner_[2] = sem;
+
+        sem_increase(sem);
+    }
+    else
+    {
+        //!EEXIST ошибка при создании в уже существующий
+        if (errno != EEXIST)
+            ERROR("Shmget wasn't done properly with earlier created memory!");
+
+        //printf("TRANSLATING!\n");
+        shared_id = shmget(key, size * sizeof(void *) + 3 * sizeof(int), 0);
+        if (shared_id == MY_IPC_ERROR)
+            ERROR("Shmget didn't do with alloc memory!");
+
+        new_stack->owner_ = (int *)shmat(shared_id, NULL, 0);
+        if (new_stack->owner_ == (void *)MY_IPC_ERROR)
+            ERROR("Shmat wasn't done properly!");
+    }
 
     new_stack->key_ = key;
     new_stack->cap_ = new_stack->owner_[1];
@@ -83,12 +95,10 @@ int push(mystack_t *stack, void *val)
         return -1;
     }
 
-    sem_t cur_sem = SEM;
-
-    sem_decrease(cur_sem);
+    sem_decrease(SEM);
     stack->mem_[SIZE] = val;
     SIZE++;
-    sem_increase(cur_sem);
+    sem_increase(SEM);
     return 0;
 }
 int pop(mystack_t *stack, void **val)
@@ -99,25 +109,23 @@ int pop(mystack_t *stack, void **val)
         return -1;
     }
 
-    sem_t cur_sem = SEM;
-
-    sem_decrease(cur_sem);
+    sem_decrease(SEM);
     SIZE--;
     *val = stack->mem_[SIZE];
-    sem_increase(cur_sem);
+    sem_increase(SEM);
     return 0;
 }
 
-void dump(const mystack_t *stack)
+void dump(const mystack_t *stack, const char extra_info[])
 {
-    printf("\nDump has started!\n");
     sem_decrease(SEM);
+    printf("\nDump has started! %s\n", extra_info);
     for (int i = 0; i < SIZE; ++i)
     {
         printf("%d\t", *((int *)(stack->mem_[i])));
     }
+    printf("\nDump has finished! %s\n", extra_info);
     sem_increase(SEM);
-    printf("\nDump has finished!\n");
 }
 
 pid_t fork_s()

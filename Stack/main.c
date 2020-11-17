@@ -1,9 +1,11 @@
 #include "Stack/stack.h"
+#include "math.h"
 
 void DO_TESTS();
 void test1();
 void test2();
 void test3();
+void test4();
 
 //const int MY_IPC_ERROR = -1;
 
@@ -27,6 +29,8 @@ void DO_TESTS()
     printf("\n\nTESTED -- 2!!!\n\n");
     test3();
     printf("\n\nTESTED -- 3!!!\n\n");
+    test4();
+    printf("\n\nTESTED -- 4!!!\n\n");
 }
 
 void test1()
@@ -47,20 +51,18 @@ void test1()
 
     if (pd == 0)
     {
-        stack_first_init(key, 21);
-
         mystack_t *my_st = attach_stack(key, 21);
 
         int data[] = {6, 7, 8, 9, 10};
         for (int i = 0; i < 5; ++i)
         {
             push(my_st, (void *)(data + i));
-            dump(my_st);
+            dump(my_st, "Child");
         }
 
         sem_increase(main_sem);
         sem_decrease(extra_sem);
-        dump(my_st);
+        dump(my_st, "Child");
         detach_stack(my_st);
 
         free(my_st);
@@ -76,7 +78,7 @@ void test1()
     for (int i = 0; i < 5; ++i)
     {
         push(my_st, (void *)(data + i));
-        dump(my_st);
+        dump(my_st, "Parent");
     }
 
     detach_stack(my_st);
@@ -108,7 +110,7 @@ void test2()
         for (int i = 0; i < 5; ++i)
         {
             push(my_st, data + i);
-            dump(my_st);
+            dump(my_st, "Child");
         }
 
         for (int i = 0; i < 5; ++i)
@@ -116,7 +118,7 @@ void test2()
             void *val = NULL;
             pop(my_st, &val);
             printf("Popped kids value : %d\n", *(int *)val);
-            dump(my_st);
+            dump(my_st, "Child");
         }
 
         detach_stack(my_st);
@@ -126,7 +128,6 @@ void test2()
         raise(SIGKILL);
     }
 
-    stack_first_init(key_stack, 10);
     int data[] = {6, 7, 8, 9, 10};
     sem_increase(sem);
     mystack_t *my_st = attach_stack(key_stack, 10);
@@ -134,7 +135,7 @@ void test2()
     for (int i = 0; i < 5; ++i)
     {
         push(my_st, data + i);
-        dump(my_st);
+        dump(my_st, "Parent");
     }
 
     for (int i = 0; i < 5; ++i)
@@ -142,7 +143,7 @@ void test2()
         void *val = NULL;
         pop(my_st, &val);
         printf("Popped main value : %d\n", *(int *)val);
-        dump(my_st);
+        dump(my_st, "Parent");
     }
 
     detach_stack(my_st);
@@ -155,14 +156,13 @@ void test2()
 void test3()
 {
     GET_KEY(key);
-    stack_first_init(key, 2);
     mystack_t *my_st = attach_stack(key, 2);
 
     int data[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     for (int i = 0; i < 10; ++i)
     {
         int out = push(my_st, data + i);
-        dump(my_st);
+        dump(my_st, "");
         if ((i < 2 && out == -1) ||
             (i >= 2 && out != -1))
         {
@@ -174,7 +174,7 @@ void test3()
     {
         void *val = NULL;
         int out = pop(my_st, &val);
-        dump(my_st);
+        dump(my_st, "");
         if ((i < 2 && out == -1) ||
             (i >= 2 && out != -1))
         {
@@ -186,4 +186,44 @@ void test3()
     mark_destruct(my_st);
 
     free(my_st);
+}
+
+void test4()
+{
+    GET_KEY(key); //! на дефайнах создаёт ключ ftok
+                  //! и сразу проверяет на ошибки
+
+    const int capacity = (1 << 16) * 10;
+    int data[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+
+    pid_t main_pd = fork_s();
+    // !главный поток, анализирующий работу стэка
+
+    if (main_pd == 0)
+    {
+        for (int i = 0; i < 15; ++i)
+            fork();
+
+        mystack_t *my_st = attach_stack(key, capacity);
+        if (my_st == NULL)
+            ERROR("MISTAKE IN CREATING!");
+
+        for (int i = 0; i < 10; ++i)
+            push(my_st, data + i);
+
+        void *val = NULL;
+        for (int i = 0; i < 10; ++i)
+            pop(my_st, &val);
+
+        free(my_st);
+        raise(SIGKILL);
+    }
+
+    mystack_t *my_st = attach_stack(key, capacity);
+    for (int i = 0; i < 10; ++i)
+    {
+        //!каждую секунду проверяем размер занятый данными
+        printf("%d: %d\n", i, get_size(my_st));
+        sleep(1);
+    }
 }
