@@ -1,5 +1,6 @@
 #pragma once
-#include "stdlib.h"
+#define _GNU_SOURCE
+#include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -9,20 +10,26 @@
 #include <time.h>
 #include <signal.h>
 #include <unistd.h>
-#include "errno.h"
+#include <time.h>
+#include <errno.h>
 
 typedef int sem_t;
 typedef char bool_t;
+typedef char flag_t;
 
 #define UNIQUE_KEY 5493
-
-#define SIZE stack->owner_[0]
-#define SEM stack->owner_[2]
 
 #define MY_IPC_ERROR -1
 #define TRUE 1
 #define FALSE 0
 #define filename "Hah"
+
+typedef enum
+{
+    NO_WAIT,
+    WAIT_INF,
+    WAIT_TIME
+} WAITING;
 
 typedef struct
 {
@@ -30,6 +37,8 @@ typedef struct
     void **mem_;
     int cap_;
     key_t key_;
+    sem_t sem_;
+
 } mystack_t;
 
 void stack_first_init(int key, int size);
@@ -57,6 +66,8 @@ int push(mystack_t *stack, void *val);
 /* Pop val from stack into memory */
 int pop(mystack_t *stack, void **val);
 
+int set_wait(int val, struct timespec *timeout);
+
 //MY_FUNCTIONS
 /////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////
@@ -68,7 +79,8 @@ void warrning(const char info[], size_t LINE, char *FILE);
 
 pid_t fork_s();
 
-void sem_increase(sem_t sem);
-void sem_decrease(sem_t sem);
+struct sembuf *initialize_semaphors_for_library(int flag);
+int sem_increase(sem_t sem);
+int sem_decrease(sem_t sem);
 /////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////

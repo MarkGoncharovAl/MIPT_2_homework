@@ -1,5 +1,5 @@
 #include "Stack/stack.h"
-#include "math.h"
+#include <math.h>
 
 void DO_TESTS();
 void test1();
@@ -39,13 +39,13 @@ void test1()
     GET_KEY(extra_key1);
     GET_KEY(extra_key);
 
-    sem_t main_sem = semget(extra_key1, 1, IPC_CREAT | 0777);
-    sem_t extra_sem = semget(extra_key, 1, IPC_CREAT | 0777);
+    sem_t main_sem = semget(extra_key1, 1, IPC_CREAT | IPC_EXCL | 0777);
+    sem_t extra_sem = semget(extra_key, 1, IPC_CREAT | IPC_EXCL | 0777);
 
     if (main_sem == -1 || extra_sem == -1)
-    {
-        ERROR("SEMAPHORS");
-    }
+        ERROR("Semaphors wasn't properly created!");
+
+    initialize_semaphors_for_library(0);
 
     pid_t pd = fork();
 
@@ -96,15 +96,19 @@ void test2()
     GET_KEY(key_sem);
     GET_KEY(key_stack);
 
-    sem_t sem = semget(key_sem, 1, IPC_CREAT | 0777);
+    sem_t sem = semget(key_sem, 1, IPC_CREAT | IPC_EXCL | 0777);
     if (sem == MY_IPC_ERROR)
         ERROR("sem wasn't created properly!");
+    initialize_semaphors_for_library(0);
+
+    //! CHECK SET_WAIT
+    //set_wait(-1, NULL);
 
     pid_t pd = fork_s();
     if (pd == 0)
     {
         int data[] = {1, 2, 3, 4, 5};
-        sem_decrease(sem);
+        sem_increase(sem);
         mystack_t *my_st = attach_stack(key_stack, 10);
 
         for (int i = 0; i < 5; ++i)
@@ -129,7 +133,7 @@ void test2()
     }
 
     int data[] = {6, 7, 8, 9, 10};
-    sem_increase(sem);
+    sem_decrease(sem);
     mystack_t *my_st = attach_stack(key_stack, 10);
 
     for (int i = 0; i < 5; ++i)
@@ -157,6 +161,7 @@ void test3()
 {
     GET_KEY(key);
     mystack_t *my_st = attach_stack(key, 2);
+    set_wait(0, NULL);
 
     int data[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     for (int i = 0; i < 10; ++i)
@@ -220,7 +225,7 @@ void test4()
     }
 
     mystack_t *my_st = attach_stack(key, capacity);
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < 7; ++i)
     {
         //!каждую секунду проверяем размер занятый данными
         printf("%d: %d\n", i, get_size(my_st));
