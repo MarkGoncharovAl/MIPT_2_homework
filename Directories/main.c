@@ -33,5 +33,7 @@ int main(int argc, char *argv[])
         {
             printf("%s\n", out->d_name);
         }
+
+        closedir(dir);
     }
 }
