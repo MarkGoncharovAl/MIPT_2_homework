@@ -1,0 +1,13 @@
+Reserve copy has started!
+Path: folder2
+Creating folder!
+Path: file
+Creating file!
+Path: file
+Attributing file!
+Path: file4
+Creating file!
+Attributing file!
+Path: file4
+Attributing file!
+Reserve copy has ended!
