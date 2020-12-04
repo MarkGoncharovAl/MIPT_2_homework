@@ -1,4 +1,4 @@
-#include "ResCop.h"
+#include "Libraries/ResCop.h"
 
 char main_end = 1;
 #define KILL_AIM(a) kill(a, SIGUSR1)
@@ -13,9 +13,9 @@ int main()
 
     ////////////////////////////////////
     //!Work with desckriptors!
-    fd_t fd = open("INFO/log.txt", O_WRONLY | O_TRUNC);
+    fd_t fd = open("log.txt", O_WRONLY | O_TRUNC);
     if (fd == -1)
-        ERROR("Can't open log file INFO/log.txt properly!");
+        ERROR("Can't open log file log.txt properly!");
 
     int check_mkfifo = mkfifo("/tmp/daemon_way", 0666);
     if (check_mkfifo == -1 && errno != EEXIST)
@@ -48,7 +48,7 @@ int main()
         {
             if (last_aim != FIRST_AIM)
             {
-                KILL_AIM(last_aim);
+                kill(last_aim, SIGUSR1);
                 free(FileIn);
                 free(FileOut);
             }
@@ -62,7 +62,7 @@ int main()
         //!If num != 0 and num != -1
         else
         {
-            KILL_AIM(last_aim);
+            kill(last_aim, SIGUSR1);
             ERROR("Not appropriate data in fifo /tmp/daemon_pid!");
         }
     }
