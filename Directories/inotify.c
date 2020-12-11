@@ -9,41 +9,10 @@
 #include <errno.h>
 
 typedef int fd_t;
+#define MAX_EVENTS 10
 
 int main(int argc, char *argv[])
 {
-    /*
-    DIR *opendir(const char *name);
-    DIR *fdopendir(int fd);
-    readdir 3
-    DT_
-    rewinddir
-    seekdir
-    scandir - DON'T
-    telldir
-    closedir
-    inotify
-
-    */
-    /*
-    for (int i = 1; i < argc; ++i)
-    {
-        DIR *dir = opendir(argv[i]);
-        if (dir == NULL)
-        {
-            printf("File %s can't be opened!\n", argv[i]);
-            continue;
-        }
-
-        struct dirent *out;
-        while ((out = readdir(dir)) != NULL)
-        {
-            printf("%s\n", out->d_name);
-        }
-
-        closedir(dir);
-    }
-    */
     if (argc != 2)
     {
         perror("Not enough amount of parameters!");
@@ -66,13 +35,13 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    char buf[4096] = {};
+    struct inotify_event buf[MAX_EVENTS];
     while (1)
     {
-        int check_read = read(in, buf, 4096);
-        if (check_read > 0)
+        int check_read = read(in, (void *)buf, sizeof(struct inotify_event) * MAX_EVENTS) / sizeof(struct inotify_event);
+        for (int i = 0; i < check_read; ++i)
         {
-            struct inotify_event *event = (struct inotify_event *)buf;
+            struct inotify_event *event = buf + i;
             printf("Path: %s ", event->name);
             if (event->mask & IN_CREATE)
                 printf("Event is creating!\n");
@@ -80,11 +49,6 @@ int main(int argc, char *argv[])
                 printf("Event is deleting!\n");
             if (event->mask & IN_MOVE_SELF)
                 printf("Event is moving now!\n");
-        }
-        else
-        {
-            perror("Reading was unsuccessful!\n");
-            return -1;
         }
     }
 
